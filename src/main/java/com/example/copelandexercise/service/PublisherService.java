@@ -1,7 +1,7 @@
 package com.example.copelandexercise.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.core.JmsTemplate;
+import org.apache.qpid.jms.JmsConnectionFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
@@ -10,33 +10,34 @@ import javax.jms.*;
 @Service
 public class PublisherService {
 
-    @Autowired
-    JmsTemplate jmsTemplate;
+    @Value("${spring.activemq.broker-url}")
+    String brokerUrl;
 
-//    @Autowired
-//    public PublisherService(JmsTemplate jmsTemplate) {
-//        this.jmsTemplate = jmsTemplate;
-//    }
+    @Value("${spring.activemq.user}")
+    String user;
 
-    public void sendMessage(String inputMessage) {
+    @Value("${spring.activemq.password}")
+    String password;
 
-//        JmsConnectionFactory factory = new JmsConnectionFactory("amqp://localhost:5672");
-//        Connection connection = factory.createConnection("admin", "password");
-//        connection.start();
-//
-//        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//        Destination destination = session.createTopic("RandomTopic");
-//
-//        MessageProducer publisher = session.createProducer(destination);
-//
-//        TextMessage msg = session.createTextMessage(inputMessage);
-//
-//        publisher.send(msg);
-//
-//        connection.close();
+    @Value("${spring.activemq.topic}")
+    String topicName;
 
-        jmsTemplate.convertAndSend("RandomTopic", inputMessage);
+    public void sendMessage(String inputMessage) throws JMSException {
 
+        JmsConnectionFactory factory = new JmsConnectionFactory(brokerUrl);
+        Connection connection = factory.createConnection(user, password);
+        connection.start();
+
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        Destination destination = session.createTopic(topicName);
+
+        MessageProducer publisher = session.createProducer(destination);
+
+        TextMessage msg = session.createTextMessage(inputMessage);
+
+        publisher.send(msg);
+
+        connection.close();
     }
 }
