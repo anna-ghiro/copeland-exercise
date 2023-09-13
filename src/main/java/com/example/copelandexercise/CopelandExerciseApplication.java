@@ -1,38 +1,28 @@
 package com.example.copelandexercise;
 
 import org.apache.qpid.jms.JmsConnectionFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.env.Environment;
-import org.springframework.scheduling.annotation.EnableAsync;
 
 import javax.jms.*;
 import java.util.Scanner;
 
 @SpringBootApplication
-@EnableAsync
 public class CopelandExerciseApplication {
 
 	public static void main(String[] args) throws JMSException {
 
+		SpringApplication.run(CopelandExerciseApplication.class, args);
 
-		ConfigurableApplicationContext applicationContext = SpringApplication.run(CopelandExerciseApplication.class, args);
 
-		String brokerUrl = applicationContext.getEnvironment().getProperty("spring.activemq.broker-url");
-		String user = applicationContext.getEnvironment().getProperty("spring.activemq.user");
-		String password = applicationContext.getEnvironment().getProperty("spring.activemq.password");
-		String topicName = applicationContext.getEnvironment().getProperty("spring.activemq.topic");
+		JmsConnectionFactory factory = new JmsConnectionFactory("amqp://localhost:5672");
 
-		JmsConnectionFactory factory = new JmsConnectionFactory(brokerUrl);
-
-		Connection connection = factory.createConnection(user, password);
+		Connection connection = factory.createConnection("admin", "password");
 		connection.start();
 
 		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-		Destination destination = session.createTopic(topicName);
+		Destination destination = session.createTopic("RandomTopic");
 
 		MessageProducer publisher = session.createProducer(destination);
 
